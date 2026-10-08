@@ -1,0 +1,263 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAX-SOFT POS - عرض سعر</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,Arial;background:#f1f5f9;color:#1e293b}
+header{background:#14283f;color:white;padding:18px;text-align:center}
+header h1{margin:0;font-size:26px}
+header p{margin:7px 0 0;color:#cbd5e1}
+main{display:grid;grid-template-columns:1.4fr 1fr;gap:15px;padding:15px;max-width:1500px;margin:auto}
+.panel{background:white;border-radius:12px;padding:15px;box-shadow:0 2px 8px #0001}
+h2{font-size:18px;margin:0 0 15px}
+input,select,button{font:inherit;padding:10px;border:1px solid #cbd5e1;border-radius:7px}
+input,select{width:100%;margin-bottom:10px}
+.search{display:flex;gap:8px}
+.search input{flex:1}
+.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:9px}
+.product{border:1px solid #dbe3ec;border-radius:9px;padding:12px;cursor:pointer;min-height:120px}
+.product:hover{border-color:#1670b8;background:#f0f8ff}
+.model{font-weight:bold;direction:ltr;text-align:right;overflow-wrap:anywhere;color:#174a75}
+.type{font-size:12px;color:#64748b;margin:7px 0}
+.price{font-weight:bold;color:#16845b}
+.hint{font-size:11px;color:#1670b8;margin-top:8px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:8px 5px;border-bottom:1px solid #e2e8f0;text-align:right}
+th{background:#f8fafc}
+.qty{width:55px;padding:5px;margin:0}
+.remove{background:#fee2e2;color:#b91c1c;border:0;padding:5px}
+.summary{background:#f8fafc;padding:12px;border-radius:8px;margin-top:12px}
+.line{display:flex;justify-content:space-between;gap:8px;margin:9px 0}
+.total{font-size:19px;font-weight:bold;border-top:1px solid #cbd5e1;padding-top:12px}
+.discount{width:100px;margin:0;padding:5px}
+.notice{background:#fff7df;border:1px solid #efd28a;color:#704c00;padding:12px;border-radius:8px;font-size:13px;line-height:1.9;margin-top:12px}
+button{cursor:pointer}
+.primary{background:#1769aa;color:white;border:0;flex:1}
+.secondary{background:#e2e8f0;border:0}
+.actions{display:flex;gap:8px;margin-top:12px}
+.empty{text-align:center;color:#64748b;padding:20px}
+@media(max-width:850px){main{grid-template-columns:1fr}}
+@media print{
+ body{background:white}
+ header,.catalog,.no-print{display:none!important}
+ main{display:block;padding:0}
+ .panel{box-shadow:none;padding:8px}
+ .notice{background:white;color:black;border:1px solid #777}
+ input{border:0;border-bottom:1px solid #aaa;padding:4px}
+}
+</style>
+</head>
+<body>
+<header>
+<h1>MAX-SOFT POS</h1>
+<p>عرض سعر غير نهائي | كاميرات المراقبة والشبكات</p>
+</header>
+
+<main>
+<section class="panel catalog">
+<h2>الأصناف — اضغط على الصنف لإضافته</h2>
+<div class="search no-print">
+<input id="search" placeholder="بحث بالموديل أو الوصف">
+<select id="category">
+<option value="">كل التصنيفات</option>
+<option>جهاز</option>
+<option>وحدة إنذار ملحقة</option>
+<option>صندوق توصيل</option>
+<option>كاميرا تناظرية</option>
+<option>جهاز شبكي</option>
+<option>كاميرا شبكية</option>
+<option>كاميرا شبكية متحركة</option>
+<option>لفة كابل شبكات</option>
+</select>
+</div>
+<div class="products" id="products"></div>
+</section>
+
+<section class="panel">
+<h2>عرض سعر غير نهائي</h2>
+<div>
+<label>اسم العميل</label>
+<input id="customer" placeholder="اسم العميل">
+<label>رقم الجوال</label>
+<input id="phone" placeholder="رقم الجوال" type="tel">
+<label>تاريخ العرض</label>
+<input id="date" type="date">
+</div>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>الصنف</th><th>السعر</th><th class="no-print">الكمية</th><th>الإجمالي</th><th class="no-print">حذف</th></tr>
+</thead>
+<tbody id="cart">
+<tr><td colspan="5" class="empty">لم تتم إضافة أصناف بعد</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="summary">
+<div class="line"><span>المجموع الفرعي</span><strong id="subtotal">0.00 ر.س</strong></div>
+<div class="line no-print">
+<label for="discount">الخصم (ر.س)</label>
+<input id="discount" class="discount" type="number" min="0" value="0">
+</div>
+<div class="line"><span>الخصم</span><strong id="discountValue">0.00 ر.س</strong></div>
+<div class="line"><span>ضريبة القيمة المضافة (15%)</span><strong id="tax">0.00 ر.س</strong></div>
+<div class="line total"><span>الإجمالي التقديري</span><strong id="total">0.00 ر.س</strong></div>
+</div>
+
+<div class="notice">
+<strong>تنويه هام:</strong>
+الأسعار الواردة في عرض السعر تقريبية وقابلة للتغيير، ولابد من مراجعة المحل في أقرب وقت لمراجعة الأسعار واستخراج فاتورة نهائية معتمدة.
+</div>
+<p style="font-size:11px;color:#64748b">
+هذا المستند عرض سعر مبدئي وليس فاتورة بيع أو فاتورة ضريبية نهائية.
+</p>
+
+<div class="actions no-print">
+<button class="primary" onclick="printQuote()">طباعة عرض السعر</button>
+<button class="secondary" onclick="newQuote()">عرض جديد</button>
+</div>
+</section>
+</main>
+
+<script>
+const data=[
+["XVR1B04H-1","جهاز","مسجل كاميرات مراقبة",135],
+["DH-XVR5104HS-I3","جهاز","مسجل كاميرات مراقبة",165],
+["DH-XVR5B04-I","جهاز","مسجل كاميرات مراقبة",120],
+["DH-XVR7104H-4K-I3","جهاز","مسجل كاميرات مراقبة 4K",340],
+["DH-XVR1B04H-I-SSD-1T","جهاز","مسجل كاميرات مع SSD سعة 1 تيرابايت",385],
+["DH-XVR5232AN-I3","جهاز","مسجل كاميرات مراقبة 32 قناة",1000],
+["DH-XVR5116HS-I3","جهاز","مسجل كاميرات مراقبة 16 قناة",430],
+["DH-XVR5116H-4KL-I3","جهاز","مسجل كاميرات 16 قناة 4K",700],
+["DH-XVR1B16-I","جهاز","مسجل كاميرات مراقبة",300],
+["DH-XA3","وحدة إنذار ملحقة","وحدة إنذار",73],
+["DH-XA5","وحدة إنذار ملحقة","وحدة إنذار",86],
+["DH-XB3","صندوق توصيل","صندوق توصيل للكاميرا",85],
+["DH-XB5","صندوق توصيل","صندوق توصيل للكاميرا",95],
+["HFW1500TLN","كاميرا تناظرية","كاميرا مراقبة تناظرية",65],
+["HDW1500TRQ-A","كاميرا تناظرية","كاميرا مراقبة تناظرية",57],
+["HAC-T1A21N-U","كاميرا تناظرية","كاميرا مراقبة تناظرية",33],
+["HFW1801THN-I8","كاميرا تناظرية","كاميرا مراقبة تناظرية",130],
+["HDW1801TLQN-A","كاميرا تناظرية","كاميرا مراقبة تناظرية",90],
+["HFW1801CMN-IL-A","كاميرا تناظرية","كاميرا مراقبة تناظرية",115],
+["HDW1500T-Z-A","كاميرا تناظرية","كاميرا مراقبة تناظرية",160],
+["HDW1801TLQN","كاميرا تناظرية","كاميرا مراقبة تناظرية",90],
+["DHI-NVR4432-16P-EL","جهاز شبكي","مسجل شبكي NVR",0],
+["DHI-NVR4432-16P-4KS2-I","جهاز شبكي","مسجل شبكي NVR",0],
+["HFW4839S-S-IL","كاميرا شبكية","كاميرا مراقبة شبكية",250],
+["HDW2841T-S","كاميرا شبكية","كاميرا مراقبة شبكية",270],
+["HFW2549M-S-B-PRO","كاميرا شبكية","كاميرا مراقبة شبكية",270],
+["HDW2549T-S-PRO","كاميرا شبكية","كاميرا مراقبة شبكية",265],
+["HDW1239T1-A-IL","كاميرا شبكية","كاميرا مراقبة شبكية",90],
+["HFW2649TL-S-PRO","كاميرا شبكية","كاميرا مراقبة شبكية",280],
+["HDW2649TM-S-T-PV","كاميرا شبكية","كاميرا مراقبة شبكية",265],
+["DH-SD-T3E410-8P-MB-A-PV1","كاميرا شبكية متحركة","كاميرا شبكية متحركة",0],
+["PFM920I","لفة كابل شبكات","لفة كابل شبكات",0]
+];
+
+const cartItems=new Map();
+const money=n=>Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" ر.س";
+const products=document.getElementById("products");
+
+function renderProducts(){
+ const q=document.getElementById("search").value.trim().toLowerCase();
+ const cat=document.getElementById("category").value;
+ products.innerHTML=data.filter(p=>
+ (!cat||p[1]===cat)&&(!q||p.join(" ").toLowerCase().includes(q))
+ ).map(p=>`
+ <div class="product" tabindex="0" data-model="${p[0]}">
+ <div class="model">${p[0]}</div>
+ <div class="type">${p[1]}</div>
+ <div>${p[2]}</div>
+ <p class="price">${p[3]>0?money(p[3]):"السعر يحدد عند الاختيار"}</p>
+ <div class="hint">＋ اضغط للإضافة</div>
+ </div>`).join("");
+}
+
+function addItem(model){
+ const p=data.find(x=>x[0]===model);
+ if(!p)return;
+ let price=p[3];
+ if(price===0){
+  const answer=prompt("أدخل السعر التقديري للصنف "+p[0]+" بالريال:");
+  if(answer===null)return;
+  price=Number(answer);
+  if(!Number.isFinite(price)||price<0){alert("أدخل سعرًا صحيحًا.");return;}
+ }
+ if(cartItems.has(model))cartItems.get(model).qty++;
+ else cartItems.set(model,{model:p[0],type:p[1],price,qty:1});
+ renderCart();
+}
+
+function renderCart(){
+ const tbody=document.getElementById("cart");
+ if(!cartItems.size){
+  tbody.innerHTML='<tr><td colspan="5" class="empty">لم تتم إضافة أصناف بعد</td></tr>';
+ }else{
+  tbody.innerHTML=[...cartItems.values()].map(x=>`
+   <tr>
+    <td><strong dir="ltr">${x.model}</strong><div class="type">${x.type}</div></td>
+    <td>${money(x.price)}</td>
+    <td class="no-print"><input class="qty" type="number" min="1" step="1" value="${x.qty}" data-qty="${x.model}"></td>
+    <td>${money(x.price*x.qty)}</td>
+    <td class="no-print"><button class="remove" data-remove="${x.model}">حذف</button></td>
+   </tr>`).join("");
+ }
+ const subtotal=[...cartItems.values()].reduce((s,x)=>s+x.price*x.qty,0);
+ const discount=Math.min(subtotal,Math.max(0,Number(document.getElementById("discount").value)||0));
+ const tax=(subtotal-discount)*.15;
+ document.getElementById("subtotal").textContent=money(subtotal);
+ document.getElementById("discountValue").textContent=money(discount);
+ document.getElementById("tax").textContent=money(tax);
+ document.getElementById("total").textContent=money(subtotal-discount+tax);
+}
+
+products.addEventListener("click",e=>{
+ const card=e.target.closest("[data-model]");
+ if(card)addItem(card.dataset.model);
+});
+products.addEventListener("keydown",e=>{
+ if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-model]")){
+  e.preventDefault();addItem(e.target.dataset.model);
+ }
+});
+document.getElementById("cart").addEventListener("click",e=>{
+ const model=e.target.dataset.remove;
+ if(model){cartItems.delete(model);renderCart();}
+});
+document.getElementById("cart").addEventListener("change",e=>{
+ const model=e.target.dataset.qty;
+ if(model&&cartItems.has(model)){
+  cartItems.get(model).qty=Math.max(1,Math.floor(Number(e.target.value)||1));
+  renderCart();
+ }
+});
+document.getElementById("search").addEventListener("input",renderProducts);
+document.getElementById("category").addEventListener("change",renderProducts);
+document.getElementById("discount").addEventListener("input",renderCart);
+
+function printQuote(){
+ if(!cartItems.size){alert("أضف صنفًا واحدًا على الأقل قبل الطباعة.");return;}
+ window.print();
+}
+function newQuote(){
+ if(!confirm("بدء عرض سعر جديد ومسح البيانات الحالية؟"))return;
+ cartItems.clear();
+ document.getElementById("customer").value="";
+ document.getElementById("phone").value="";
+ document.getElementById("discount").value=0;
+ renderCart();
+}
+document.getElementById("date").value=new Date().toISOString().slice(0,10);
+renderProducts();
+renderCart();
+</script>
+</body>
+</html>
