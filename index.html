@@ -120,7 +120,7 @@ button{cursor:pointer}
 </p>
 
 <div class="actions no-print">
-<button class="primary" onclick="printQuote()">طباعة عرض السعر</button>
+<button class="primary" onclick="sendWhatsApp()">إرسال الطلب عبر واتساب</button>
 <button class="secondary" onclick="newQuote()">عرض جديد</button>
 </div>
 </section>
@@ -243,9 +243,30 @@ document.getElementById("search").addEventListener("input",renderProducts);
 document.getElementById("category").addEventListener("change",renderProducts);
 document.getElementById("discount").addEventListener("input",renderCart);
 
-function printQuote(){
- if(!cartItems.size){alert("أضف صنفًا واحدًا على الأقل قبل الطباعة.");return;}
- window.print();
+// ضع رقم واتساب المحل هنا بصيغة دولية، دون + أو مسافات
+const SHOP_WHATSAPP = "966590599161";
+
+function sendWhatsApp(){
+ if(!cartItems.size){alert("أضف صنفًا واحدًا على الأقل قبل الإرسال.");return;}
+ if(!/^\d{8,15}$/.test(SHOP_WHATSAPP) || SHOP_WHATSAPP.includes("X")){
+  alert("يرجى وضع رقم واتساب المحل الصحيح داخل المتغير SHOP_WHATSAPP.");
+  return;
+ }
+ const customer=document.getElementById("customer").value.trim();
+ const phone=document.getElementById("phone").value.trim();
+ const date=document.getElementById("date").value;
+ const subtotal=[...cartItems.values()].reduce((s,x)=>s+x.price*x.qty,0);
+ const discount=Math.min(subtotal,Math.max(0,Number(document.getElementById("discount").value)||0));
+ const tax=(subtotal-discount)*.15;
+ const total=subtotal-discount+tax;
+ let message=`*MAX-SOFT POS — طلب عرض سعر مبدئي*\n\n`;
+ message+=`اسم العميل: ${customer||"غير محدد"}\nجوال العميل: ${phone||"غير محدد"}\nالتاريخ: ${date||"غير محدد"}\n\n*تفاصيل الأصناف:*\n`;
+ for(const item of cartItems.values()){
+  message+=`\nالصنف: ${item.model}\nالوصف: ${item.type}\nالكمية: ${item.qty}\nسعر الوحدة: ${money(item.price)}\nإجمالي الصنف: ${money(item.price*item.qty)}\n--------------------\n`;
+ }
+ message+=`\nالمجموع الفرعي: ${money(subtotal)}\nالخصم: ${money(discount)}\nضريبة القيمة المضافة (15%): ${money(tax)}\n*الإجمالي التقديري: ${money(total)}*\n\nتنويه: الأسعار تقريبية وقابلة للتغيير، ويرجى مراجعة المحل لاعتماد الأسعار واستخراج فاتورة نهائية.\nهذا عرض سعر مبدئي وليس فاتورة بيع أو فاتورة ضريبية نهائية.`;
+ const url=`https://wa.me/${SHOP_WHATSAPP}?text=${encodeURIComponent(message)}`;
+ window.open(url,"_blank","noopener,noreferrer");
 }
 function newQuote(){
  if(!confirm("بدء عرض سعر جديد ومسح البيانات الحالية؟"))return;
